@@ -13,20 +13,26 @@ rng = np.random.Generator(bg)
 # Initializing points in box
 
 nPts = 108
-box = 5e-8
+box = 2e-8
 # box = 5e-7
 dp = box/5
 # dp = 5e-9
 V = box**3
-dv = V/5**3
-hbox = box/2
+dv = V/2**3
+# print(V,dv,(V+dv)**(1/3),box)
 T = 500
 P = 1e5
 k =  1.380649e-23        # J/K.
 beta = 1/(k*T)
 nAccepts = 0
 ntot = 0
-N = 10
+nVAccepts = 0
+nVtot = 0
+N = 1000
+
+V2 = nPts*k*T/P
+print(V,V2,V2**(1/3),box)
+
 
 # Generate configuration
 pts = generateConfig(nPts, box, rng)
@@ -35,7 +41,7 @@ plotParticles(pts,box,box)
 
 
 # Calculate energy Uold
-Uold = getPotential(pts, nPts, box, hbox)
+Uold = getPotential(pts, nPts, box)
 print()
 
 for n in range(N):
@@ -55,7 +61,7 @@ for n in range(N):
         # print('oldPt',oldPt)
 
         # Calculate Un
-        Unew = getPotential(pts, nPts, box, hbox)
+        Unew = getPotential(pts, nPts, box)
         # print('old',Uold,'\tnew',Unew,'\tdiff',Unew-Uold)
         print("old: %#.5g \t new: %#.5g \t diff: % #.5g" % (Uold, Unew, Unew-Uold))
 
@@ -78,6 +84,47 @@ for n in range(N):
         dp *= 1.05
     elif percPass < 0.5:
         dp *= 0.95
+
+    if n % 100 == 0:
+        # plotParticles(pts,box,box)
+        # change volume
+        ptsNew = pts
+        Vnew = V + dv*(rng.random()-0.5)
+        boxNew = Vnew**(1/3)
+        coordFact = boxNew/box
+        ptsNew *= coordFact
+        Unew = getPotential(ptsNew, nPts, boxNew)
+
+        dH = Unew-Uold + P*dv - k*T*nPts*np.log(Vnew/V)
+        print('\n\n\n\n')
+        # print('dV',Vnew-V,'boxdiff',boxNew-box,)
+        print("boxNew: %#.5g \t box: %#.5g \t dH: % #.5g" % (boxNew, box, dH))
+
+        # plotParticles(ptsNew,boxNew,boxNew)
+
+        # Accept/Reject Volume Change
+        if (dH) < 0 or acceptMove(dH, beta, rng):
+            nVAccepts += 1
+            pts = ptsNew
+            V = Vnew
+            Uold = Unew
+            box = boxNew
+            print('passed')
+        else:
+            pass
+            # pts[:,i:i+1] -= shift
+            print('failed')
+        nVtot += 1
+
+        if n % 100 == 0:
+            # Try to keep the percentage of Volume moves that pass to 50%
+            percVPass = nVAccepts/nVtot
+            print(percVPass*100, '% passed','\td', dv)
+            if percVPass > 0.5:
+                dv *= 1.05
+            elif percVPass < 0.5:
+                dv *= 0.95
+        print('\n\n\n\n')
 
     # if n % N/1000 == 0:
     #     plotParticles(pts)

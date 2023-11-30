@@ -33,7 +33,8 @@ def calcLJPotential(sqDistance: np.ndarray) -> np.ndarray:
 
     return LJ
 
-def getPotential(pts: np.ndarray, nPts: int, box: float, hbox: float) -> float:
+def getPotential(pts: np.ndarray, nPts: int, box: float) -> float:
+    hbox = box/2
     U = 0.0
     # print(hbox)
     # print(pts)
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     # plt.plot(r,LJ)
     # plt.ylim(-2,4)
     # draw()
-    plt.plot(r,LJ)
+    # plt.plot(r,LJ)
     # draw()
     # plt.show(block=False)
 
@@ -114,12 +115,12 @@ if __name__ == "__main__":
 
 
     print(minval)
-    plt.show()
+    # plt.show()
     
 
     bg = np.random.MT19937(0)
     rg = np.random.Generator(bg)
-    print(rg.random((1,4)))
+    print(rg.random())
 
 
 
