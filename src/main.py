@@ -1,6 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from functions import *
+import time
+import sys
+
+file = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
+
 
 # 3d plot, how to use VScode after plotting
 
@@ -13,31 +18,44 @@ rng = np.random.Generator(bg)
 # Initializing points in box
 
 nPts = 108
-box = 2e-8
-# box = 5e-7
-dp = box/5
+# box = 2e-8
 # dp = 5e-9
-V = box**3
-dv = V/2**3
+# V = box**3
+# dv = V/2**3
 # print(V,dv,(V+dv)**(1/3),box)
-T = 500
+T = 320
 P = 1e5
+P = 7538580
+P = 1.005e+8
 k =  1.380649e-23        # J/K.
 beta = 1/(k*T)
 nAccepts = 0
 ntot = 0
 nVAccepts = 0
 nVtot = 0
-N = 1000
 
-V2 = nPts*k*T/P
-print(V,V2,V2**(1/3),box)
+V = nPts*k*T/P
+box = V**(1/3)
+dp = box
+dv = V/2**3
+
+N = 51
+debug = False
+# debug = True
+
+# stuff to write to file
+Usave = np.zeros(N*nPts)
+iUsave = 0
+file.write('%i\t%i\n' % (N,nPts))
+
+
+tic = time.perf_counter()
 
 
 # Generate configuration
 pts = generateConfig(nPts, box, rng)
 
-plotParticles(pts,box,box)
+# plotParticles(pts,box,box)
 
 
 # Calculate energy Uold
@@ -50,6 +68,12 @@ for n in range(N):
 
     for i in range(nPts):
         # print(i,'iter')
+        if debug:
+            Uold2 = getPotential(pts, nPts, box)
+            if abs((Uold2-Uold)/Uold) > 1e-10:
+                print('Uold2',Uold2,'Uold',Uold)
+                print('pt1',pts[1,1])
+                sys.exit()
 
         # displace particle coords
 
@@ -63,7 +87,7 @@ for n in range(N):
         # Calculate Un
         Unew = getPotential(pts, nPts, box)
         # print('old',Uold,'\tnew',Unew,'\tdiff',Unew-Uold)
-        print("old: %#.5g \t new: %#.5g \t diff: % #.5g" % (Uold, Unew, Unew-Uold))
+        print("old: %#.5g \t new: %#.5g \t diff:% #.5g \t box: %#.5g" % (Uold, Unew, Unew-Uold,box))
 
         # Accept/reject move
         if (Unew-Uold) < 0 or acceptMove(Unew-Uold, beta, rng):
@@ -76,70 +100,97 @@ for n in range(N):
             # print('failed')
 
         ntot += 1
+        Usave[iUsave] = Uold
+        file.write("%i\t%g\n" % (iUsave, Usave[iUsave]))
+        iUsave +=1
+     
+    # change volume
+    Vnew = V + dv*(rng.random()-0.5)
+    boxNew = Vnew**(1/3)
+    coordFact = boxNew/box
+    pts *= coordFact
+    Unew = getPotential(pts, nPts, boxNew)
 
-    # Try to keep the percentage of moves that pass to 50%
-    percPass = nAccepts/ntot
-    print(percPass*100, '% passed','\td', dp)
-    if percPass > 0.5:
-        dp *= 1.05
-    elif percPass < 0.5:
-        dp *= 0.95
+    dH = Unew-Uold + P*dv - k*T*nPts*np.log(Vnew/V) # type: ignore
+    print('\n\n\n\n')
+    # print('dV',Vnew-V,'boxdiff',boxNew-box,)
+    print("boxNew: %#.5g \t box: %#.5g \t dH: % #.5g" % (boxNew, box, dH))
 
-    if n % 100 == 0:
+    # Accept/Reject Volume Change
+    if (dH) < 0 or acceptMove(dH, beta, rng):
+        nVAccepts += 1
+        V = Vnew
+        Uold = Unew
+        box = boxNew
+        print('passed')
+    else:
+        pts /= coordFact
+        # pass
+        # pts[:,i:i+1] -= shift
+        print('failed')
+    nVtot += 1
+
+    if n % 10  == 0:
+        percPass = nAccepts/ntot
+        print(percPass*100, '% passed','\td', dp)
+        if percPass > 0.5:
+            dp *= 1.05
+        elif percPass < 0.5:
+            dp *= 0.95
+        ntot = 0
+        nAccepts = 0
+
+
         # plotParticles(pts,box,box)
-        # change volume
-        ptsNew = pts
-        Vnew = V + dv*(rng.random()-0.5)
-        boxNew = Vnew**(1/3)
-        coordFact = boxNew/box
-        ptsNew *= coordFact
-        Unew = getPotential(ptsNew, nPts, boxNew)
-
-        dH = Unew-Uold + P*dv - k*T*nPts*np.log(Vnew/V)
-        print('\n\n\n\n')
-        # print('dV',Vnew-V,'boxdiff',boxNew-box,)
-        print("boxNew: %#.5g \t box: %#.5g \t dH: % #.5g" % (boxNew, box, dH))
+        
 
         # plotParticles(ptsNew,boxNew,boxNew)
-
-        # Accept/Reject Volume Change
-        if (dH) < 0 or acceptMove(dH, beta, rng):
-            nVAccepts += 1
-            pts = ptsNew
-            V = Vnew
-            Uold = Unew
-            box = boxNew
-            print('passed')
-        else:
-            pass
-            # pts[:,i:i+1] -= shift
-            print('failed')
-        nVtot += 1
-
-        if n % 100 == 0:
+        if n % 10 == 0:     
+          
             # Try to keep the percentage of Volume moves that pass to 50%
             percVPass = nVAccepts/nVtot
-            print(percVPass*100, '% passed','\td', dv)
+            print(percVPass*100, '% passed','\tdv', dv)
             if percVPass > 0.5:
                 dv *= 1.05
             elif percVPass < 0.5:
                 dv *= 0.95
+            
+            nVAccepts = 0
+            nVtot = 0
+
+            # time.sleep(5)
+
+            
         print('\n\n\n\n')
+       
 
     # if n % N/1000 == 0:
     #     plotParticles(pts)
 
 
+toc = time.perf_counter()
+totalTime = toc-tic
+print(f"Elapsed time: {totalTime:0.4f} seconds")
+
+# plt.plot(np.arange(N*nPts),Usave,'o')
+
+# plotParticles(pts,box,box)
 
 
-plotParticles(pts,box,box)
-
-
-
+file.close()
 
 # potentials = getPotentials((np) sqDistance, bool isCO2)
 # accept = acceptMove(double dPotential)
 
+
+# old: -8.2495e-19         new: -4.5717e-19        diff: 3.6777e-19        box: 2.1008e-09
+
+# boxNew: 2.0834e-09       box: 2.1008e-09         dH:  1.3635e-19
+# failed
+# 0.6481481481481481 % passed     d 1.3005139389942589e-09
+# 30.0 % passed   dv 5.90509347176418e-28
+
+# Elapsed time: 15.4381 seconds
 
 
 # 1. Generate configuration

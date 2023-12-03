@@ -26,10 +26,9 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
 def calcLJPotential(sqDistance: np.ndarray) -> np.ndarray:
     global k, sigma, eps 
     
-    # sigma = 1
-    # eps = 1
-    v = (sigma/sqDistance)
-    LJ = 4*eps*(v**12 - v**6)
+    v = (sigma**2/sqDistance)**3    # type: ignore
+    LJ = 4*eps*(v**2 - v)           # type: ignore
+    # LJ6 = 4*eps*(v**12 - v**6) # type: ignore
 
     return LJ
 
@@ -68,7 +67,7 @@ def getPotential(pts: np.ndarray, nPts: int, box: float) -> float:
 
 def acceptMove(dPotential: float, beta: float, rng) -> bool:
 
-    p = np.min((1,np.exp(-beta*dPotential)))
+    p = np.min((1,np.exp(-beta*dPotential))) # type: ignore
     r = rng.random()
     # print('random number',r,'\tvalue',np.exp(-beta*dPotential))
     return r < p
@@ -87,17 +86,19 @@ if __name__ == "__main__":
     
     # print()
 
-    # b = np.arange(17)
-    # b %= 3
-    # print(b)
+    b = np.zeros(4)
+    print(b)
 
-
+    A = np.arange(7)
+    print(A)
+    A = A**2
+    print(A)
 
     
 
     minval = 2**(1/6)*sigma
 
-    r = np.linspace(minval/1.1,3*minval,1000)
+    r = np.linspace(minval/1.1,3*minval,1000)**2    # type: ignore
     LJ = calcLJPotential(r)
 
     # print(LJ)
