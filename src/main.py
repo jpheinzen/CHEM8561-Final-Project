@@ -92,10 +92,10 @@ for n in range(N):
         # print('oldPt',oldPt)
 
         # Calculate Un
-        # (LJ12newsmall,LJ6newsmall) = getPotential(pts, i, box)
+        (LJ12newsmall,LJ6newsmall) = getPotential(pts, i, box)
 
-        # I = getInds(i,nPts)
-        # dU = np.sum(LJ12newsmall+LJ6newsmall) - np.sum(LJ12old[I]+LJ6old[I])
+        I = getInds(i,nPts)
+        dU = np.sum(LJ12newsmall+LJ6newsmall) - np.sum(LJ12old[I]+LJ6old[I])
         Unew = getPotentialOld(pts, nPts, box)
         # Unew = np.sum(LJ12new+LJ6new)
 
@@ -103,11 +103,13 @@ for n in range(N):
         print("old: %#.5g \t new: %#.5g \t diff:% #.5g \t box: %#.5g" % (Uold, Unew, Unew-Uold,box))
         # print("old: %#.5g \t new: %#.5g \t diff:% #.5g \t box: %#.5g" % (Uold, Uold+dU, dU,box))
 
+        print(Unew-Uold,dU,Unew-Uold-dU)
+
         # Accept/reject move
         if (Unew-Uold) < 0 or acceptMove(Unew-Uold, beta, rng):
             nAccepts += 1
-            # LJ12old[I] = LJ12newsmall
-            # LJ6old[I] = LJ6newsmall
+            LJ12old[I] = LJ12newsmall
+            LJ6old[I] = LJ6newsmall
             Uold = Unew
             # print('passed')
         else:
@@ -125,8 +127,8 @@ for n in range(N):
     boxNew = Vnew**(1/3)
     coordFact = boxNew/box
     pts *= coordFact
-    (a,b) = getPotentials(pts, nPts, boxNew)
-    Unew = np.sum(a+b)
+    (LJ12new,LJ6new) = getPotentials(pts, nPts, boxNew)
+    Unew = np.sum(LJ12new+LJ6new)
 
     dH = Unew-Uold + P*dv - k*T*nPts*np.log(Vnew/V) # type: ignore
     print('\n\n\n\n')
@@ -139,6 +141,8 @@ for n in range(N):
         V = Vnew
         Uold = Unew
         box = boxNew
+        LJ12old = LJ12new
+        LJ6old = LJ6new
         print('passed')
     else:
         pts /= coordFact
