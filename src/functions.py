@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 # from matplotlib.pyplot import plot, ion, show, draw
 
 # interactive mode
 # ion()
 
 k =  1.380649e-23        # J/K.
-sigma = 3.831e-10
+sigma = 3.831e-10**2
 eps = 204.68*k
 
 def generateConfig(nPts: int, box: float, rng) -> np.ndarray:
@@ -26,10 +27,10 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
 def calcLJPotential(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
     global k, sigma, eps 
     
-    v = (sigma**2/sqDistance)**3    # type: ignore
+    v = (sigma/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore
-    LJ12 = 4*eps*(v**2)             # type: ignore
-    LJ6 = -4*eps*(v)                # type: ignore
+    LJ12 = (v**2)             # type: ignore
+    LJ6 = (v)                # type: ignore
 
     return LJ12,LJ6
 
@@ -97,12 +98,21 @@ def getPotentials(pts: np.ndarray, nPts: int, box: float) -> "tuple[np.ndarray,n
         # print(pots)
         # Uarr[i] = np.sum(LJ12[hfi:hfip1]+LJ6[hfi:hfip1])
         # print(U)
+        # print(i)y
     
     # U = np.sum(Uarr)
 
     return LJ12,LJ6
 
+def calcLJPotentialOld(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
+    global k, sigma, eps 
+    
+    v = (sigma/sqDistance)**3    # type: ignore
+    # LJ = 4*eps*(v**2 - v)           # type: ignore
+    LJ12 = 4*eps*(v**2)             # type: ignore
+    LJ6 = -4*eps*(v)                # type: ignore
 
+    return LJ12,LJ6
 
 def getPotentialOld(pts: np.ndarray, nPts: int, box: float) -> float:
     hbox = box/2
@@ -130,10 +140,11 @@ def getPotentialOld(pts: np.ndarray, nPts: int, box: float) -> float:
         # print(sqDistance)
         # print(sqDistance2+sqDistance)
         
-        (LJ12,LJ6) = calcLJPotential(sqDistance)
+        (LJ12,LJ6) = calcLJPotentialOld(sqDistance)
         # print(pots)
         U += np.sum(LJ12+LJ6)
         # print(U)
+        # print(i)
 
     return U
 
@@ -153,6 +164,14 @@ def integers(a, b):
 def getInds(i: int, N: int) -> np.ndarray:
     return np.concatenate((integers(hashF(i),hashF(i+1)), hashF(integers(i+1,N))+i)) # type: ignore
 
+def check(a,b,tag,exit=True, tol = 1e-15):
+    if (abs((a-b)/a) > tol).any() and (abs(a-b) > 1e-32).all():
+        print(tag,'FAILED','a',a,'b',b,(a-b)/a,abs(a-b))
+        if exit:
+            sys.exit()
+        else:
+            print()
+            # time.sleep(0.1)
 
 if __name__ == "__main__":
     # rng = np.random.default_rng()
