@@ -23,16 +23,88 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
         plt.ylim(0,ymax)
     plt.show()
 
-def calcLJPotential(sqDistance: np.ndarray) -> np.ndarray:
+def calcLJPotential(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
     global k, sigma, eps 
     
     v = (sigma**2/sqDistance)**3    # type: ignore
-    LJ = 4*eps*(v**2 - v)           # type: ignore
-    # LJ6 = 4*eps*(v**12 - v**6) # type: ignore
+    # LJ = 4*eps*(v**2 - v)           # type: ignore
+    LJ12 = 4*eps*(v**2)             # type: ignore
+    LJ6 = -4*eps*(v)                # type: ignore
 
-    return LJ
+    return LJ12,LJ6
 
-def getPotential(pts: np.ndarray, nPts: int, box: float) -> float:
+def getPotential(pts: np.ndarray, i: int, box: float) -> "tuple[np.ndarray,np.ndarray]":
+    hbox = box/2
+    # U = 0.0
+    # print(hbox)
+    # print(pts)
+
+    # print()
+    # print(i)
+    dr = np.concatenate((pts[:,:i],pts[:,i+1:]),1) - pts[:,i:i+1]
+    # print(dr)
+    # dr = np.abs(dr)
+
+    dr[dr > hbox] -= box
+    dr[dr < -hbox] += box
+    # dr = np.where(dr > hbox, dr-box, dr)
+    # dr = np.where(dr < -hbox, dr+box, dr)
+    # print(dr)
+
+    # sqDistance2 = dr[:,0]
+    sqDistance = dr[0:1,:]**2 + dr[1:2,:]**2 +dr[2:3,:]**2
+
+    # print(sqDistance2)
+    # print(sqDistance)
+    # print(sqDistance2+sqDistance)
+    
+    return calcLJPotential(sqDistance)
+
+def getPotentials(pts: np.ndarray, nPts: int, box: float) -> "tuple[np.ndarray,np.ndarray]":
+    hbox = box/2
+    # U = 0.0
+    # print(hbox)
+    # print(pts)
+
+    # Uarr = np.zeros(nPts)
+    LJ12 = np.zeros(hashF(nPts))
+    LJ6 = np.zeros(hashF(nPts))
+
+    for i in range(1,nPts):
+        # print()
+        # print(i)
+        hfi = hashF(i)
+        hfip1 = hashF(i+1)
+        # print(hfi,hfip1)
+        dr = pts[:,:i] - pts[:,i:i+1]
+        # print(dr)
+        # dr = np.abs(dr)
+
+        dr[dr > hbox] -= box
+        dr[dr < -hbox] += box
+        # dr = np.where(dr > hbox, dr-box, dr)
+        # dr = np.where(dr < -hbox, dr+box, dr)
+        # print(dr)
+
+        # sqDistance2 = dr[:,0]
+        sqDistance = dr[0:1,:]**2 + dr[1:2,:]**2 +dr[2:3,:]**2
+
+        # print(sqDistance2)
+        # print(sqDistance)
+        # print(sqDistance2+sqDistance)
+        
+        (LJ12[hfi:hfip1],LJ6[hfi:hfip1]) = calcLJPotential(sqDistance)
+        # print(pots)
+        # Uarr[i] = np.sum(LJ12[hfi:hfip1]+LJ6[hfi:hfip1])
+        # print(U)
+    
+    # U = np.sum(Uarr)
+
+    return LJ12,LJ6
+
+
+
+def getPotentialOld(pts: np.ndarray, nPts: int, box: float) -> float:
     hbox = box/2
     U = 0.0
     # print(hbox)
@@ -58,11 +130,11 @@ def getPotential(pts: np.ndarray, nPts: int, box: float) -> float:
         # print(sqDistance)
         # print(sqDistance2+sqDistance)
         
-        pots = calcLJPotential(sqDistance)
+        (LJ12,LJ6) = calcLJPotential(sqDistance)
         # print(pots)
-        U += np.sum(pots)
+        U += np.sum(LJ12+LJ6)
         # print(U)
-    
+
     return U
 
 def acceptMove(dPotential: float, beta: float, rng) -> bool:
@@ -72,10 +144,21 @@ def acceptMove(dPotential: float, beta: float, rng) -> bool:
     # print('random number',r,'\tvalue',np.exp(-beta*dPotential))
     return r < p
 
+def hashF(i: int) -> int:
+    return i*(i-1)//2
+
+def integers(a, b):
+    return np.arange(a,b)
+
+def getInds(i: int, N: int) -> np.ndarray:
+    return np.concatenate((integers(hashF(i),hashF(i+1)), hashF(integers(i+1,N))+i)) # type: ignore
+
 
 if __name__ == "__main__":
-    rng = np.random.default_rng()
-    nums = generateConfig(4,100, rng)
+    # rng = np.random.default_rng()
+    bg = np.random.MT19937(1)
+    rng = np.random.Generator(bg)
+    pts = generateConfig(4,10, rng)
     # print(nums)
 
     # print(np.min(nums))
@@ -86,20 +169,32 @@ if __name__ == "__main__":
     
     # print()
 
-    b = np.zeros(4)
-    print(b)
 
-    A = np.arange(7)
-    print(A)
-    A = A**2
-    print(A)
+
+
+    # a = np.arange(6)
+    # a1 = a**2
+    # a2 = a**3
+
+    # a +=1
+    # print(a,a1,a2)
+
+    # print(a1[getInds(2,4)])
+
+    # b = np.zeros(4)
+    # print(b)
+
+    # A = np.arange(7)
+    # print(A)
+    # A = A**2
+    # print(A)
 
     
 
-    minval = 2**(1/6)*sigma
+    # minval = 2**(1/6)*sigma
 
-    r = np.linspace(minval/1.1,3*minval,1000)**2    # type: ignore
-    LJ = calcLJPotential(r)
+    # r = np.linspace(minval/1.1,3*minval,1000)**2    # type: ignore
+    # LJ = calcLJPotential(r)
 
     # print(LJ)
 
@@ -115,15 +210,22 @@ if __name__ == "__main__":
     # plt.show(block=False)
 
 
-    print(minval)
+    # print(minval)
     # plt.show()
     
 
-    bg = np.random.MT19937(0)
-    rg = np.random.Generator(bg)
-    print(rg.random())
+    # bg = np.random.MT19937(0)
+    # rg = np.random.Generator(bg)
+    # print(rg.random())
 
 
+
+
+    i = 2
+    print(pts[:,:i])
+    print(pts[:,i+1:])
+    a = np.concatenate((pts[:,:i],pts[:,i+1:]),1)
+    print(a)
 
 
 

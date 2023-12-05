@@ -59,8 +59,12 @@ pts = generateConfig(nPts, box, rng)
 
 
 # Calculate energy Uold
-Uold = getPotential(pts, nPts, box)
-print()
+(LJ12old,LJ6old) = getPotentials(pts, nPts, box)
+Uold = np.sum(LJ12old+LJ6old)
+# Uold = getPotentialOld(pts, nPts, box)
+
+# print((Uold-UU)/UU)
+# sys.exit()
 
 for n in range(N):
     print()
@@ -69,9 +73,12 @@ for n in range(N):
     for i in range(nPts):
         # print(i,'iter')
         if debug:
-            Uold2 = getPotential(pts, nPts, box)
-            if abs((Uold2-Uold)/Uold) > 1e-10:
-                print('Uold2',Uold2,'Uold',Uold)
+            # FIGURE OUT WHY THIS DOENS'T WORK???
+            # (LJ12old2,LJ6old2) = getPotentials(pts, nPts, box)
+            # Uold2 = np.sum(LJ12old2+LJ6old2)
+            Uold2 = getPotentialOld(pts, nPts, box)
+            if abs((Uold2-Uold)/Uold) > 1e-3:
+                print('Uold2',Uold,'Uold',Uold2,'diff',Uold-Uold2)
                 print('pt1',pts[1,1])
                 sys.exit()
 
@@ -85,13 +92,22 @@ for n in range(N):
         # print('oldPt',oldPt)
 
         # Calculate Un
-        Unew = getPotential(pts, nPts, box)
+        # (LJ12newsmall,LJ6newsmall) = getPotential(pts, i, box)
+
+        # I = getInds(i,nPts)
+        # dU = np.sum(LJ12newsmall+LJ6newsmall) - np.sum(LJ12old[I]+LJ6old[I])
+        Unew = getPotentialOld(pts, nPts, box)
+        # Unew = np.sum(LJ12new+LJ6new)
+
         # print('old',Uold,'\tnew',Unew,'\tdiff',Unew-Uold)
         print("old: %#.5g \t new: %#.5g \t diff:% #.5g \t box: %#.5g" % (Uold, Unew, Unew-Uold,box))
+        # print("old: %#.5g \t new: %#.5g \t diff:% #.5g \t box: %#.5g" % (Uold, Uold+dU, dU,box))
 
         # Accept/reject move
         if (Unew-Uold) < 0 or acceptMove(Unew-Uold, beta, rng):
             nAccepts += 1
+            # LJ12old[I] = LJ12newsmall
+            # LJ6old[I] = LJ6newsmall
             Uold = Unew
             # print('passed')
         else:
@@ -109,7 +125,8 @@ for n in range(N):
     boxNew = Vnew**(1/3)
     coordFact = boxNew/box
     pts *= coordFact
-    Unew = getPotential(pts, nPts, boxNew)
+    (a,b) = getPotentials(pts, nPts, boxNew)
+    Unew = np.sum(a+b)
 
     dH = Unew-Uold + P*dv - k*T*nPts*np.log(Vnew/V) # type: ignore
     print('\n\n\n\n')
@@ -176,6 +193,8 @@ print(f"Elapsed time: {totalTime:0.4f} seconds")
 
 # plotParticles(pts,box,box)
 
+Uold2 = getPotentialOld(pts, nPts, box)
+print(abs((Uold2-Uold)/Uold),Uold2)
 
 file.close()
 
