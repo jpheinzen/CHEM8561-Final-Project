@@ -7,7 +7,7 @@ import sys
 # ion()
 
 k =  1.380649e-23        # J/K.
-sigma = 3.831e-10**2
+sigma = 3.831e-10
 eps = 204.68*k
 
 def generateConfig(nPts: int, box: float, rng) -> np.ndarray:
@@ -27,7 +27,7 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
 def calcLJPotential(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
     global k, sigma, eps 
     
-    v = (sigma/sqDistance)**3    # type: ignore
+    v = (sigma**2/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore
     LJ12 = (v**2)             # type: ignore
     LJ6 = (v)                # type: ignore
@@ -173,11 +173,18 @@ def check(a,b,tag,exit=True, tol = 1e-15):
             print()
             # time.sleep(0.1)
 
+def writePts(file, pts: np.ndarray, nPts: int) -> None:
+    for i in range(nPts):
+        file.write('\t%g\t%g\t%g\n' % (pts[0,i],pts[1,i],pts[2,i]))
+        # print('\t%g\t%g\t%g\n' % (pts[0,i],pts[1,i],pts[2,i]))
+    
+
 if __name__ == "__main__":
+    nPts = 4
     # rng = np.random.default_rng()
     bg = np.random.MT19937(1)
     rng = np.random.Generator(bg)
-    pts = generateConfig(4,10, rng)
+    pts = generateConfig(nPts,10, rng)
     # print(nums)
 
     # print(np.min(nums))
@@ -247,7 +254,11 @@ if __name__ == "__main__":
     print(a)
 
 
+    test = np.arange(1)/0
+    print(test)
 
+    # Testing printing of pts array
+    # writePts(pts,nPts)
 
 
 

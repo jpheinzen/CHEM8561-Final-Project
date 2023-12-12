@@ -12,9 +12,9 @@ eps = 204.68*k
 # 3d plot, how to use VScode after plotting
 
 
-rng = np.random.default_rng()
-# bg = np.random.MT19937(1)
-# rng = np.random.Generator(bg)
+# rng = np.random.default_rng()
+bg = np.random.MT19937(1)
+rng = np.random.Generator(bg)
 
 
 # Initializing points in box
@@ -38,18 +38,25 @@ dp = box
 dv = V/2**3
 
 N = 51
-N = 50001
+N = 1_000_000+5001
 debug = False
 # debug = True
-writeTF = False
-writeTF = True
+writeUTF = False
+writeUTF = True
+writeptsTF = True
+writeEvery = 100
 writeToScreen = False
 
-if writeTF: # stuff to write to file
-    file = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
-    Usave = np.zeros(N*nPts)
-    iUsave = 0
-    file.write('%i\t%i\n' % (N,nPts))
+if writeUTF: # energy to write to file
+    file1 = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
+    # Usave = np.zeros(N*nPts)
+    # iUsave = 0
+    iTot = 0
+    file1.write('%i\t%i\t%i\n' % (N,nPts,writeEvery))
+if writeptsTF:  # points to write to file
+    file2 = open("/project/heinz194/private/classes/CHEM_8561/Project/pts.txt", "w")
+    file2.write('%i\t%i\t%i\n' % (N,nPts,writeEvery))
+
 
 
 tic = time.perf_counter()
@@ -117,10 +124,18 @@ for n in range(N):
             # print('failed')
 
         ntot += 1
-        if writeTF:
-            Usave[iUsave] = Uold
-            file.write("%i\t%g\n" % (iUsave, Usave[iUsave]))
-            iUsave +=1
+
+        if writeUTF and ((iTot % (nPts*writeEvery) == 0) or (iTot < writeEvery*nPts)):
+        # if writeUTF and ((iTot % (nPts*writeEvery) == 0)):
+            # Usave[iUsave] = Uold
+            file1.write("%i\t%g\n" % (iTot, Uold))
+            # iUsave +=1
+        iTot += 1
+
+
+    if writeptsTF and (n % writeEvery == 0):
+        file2.write('%i\t%g\t%g\t%g\n' % (n,V,dp,dv))
+        writePts(file2,pts,nPts)
 
     # change volume
     Vnew = V + dv*(rng.random()-0.5)
@@ -168,7 +183,7 @@ for n in range(N):
         # Try to keep the percentage of particle moves that pass to 50%
         percPass = nAccepts/ntot
         if percPass > 0.5:
-            dp *= 1.05
+            dp = min(box,dp*1.05)
         elif percPass < 0.5:
             dp *= 0.95
         ntot = 0
@@ -201,16 +216,20 @@ for n in range(N):
 toc = time.perf_counter()
 totalTime = toc-tic
 print(f"Elapsed time: {totalTime:0.4f} seconds")
+totalTime /= 3600
+print(f"Elapsed time: {totalTime:0.4f} hours")
 
 print(percPass*100, '% passed','\td', dp)
 print(percVPass*100, '% passed','\tdv', dv)
 
 Uold2 = getPotentialOld(pts, nPts, box)
-print(abs((Uold2-Uold)/Uold),Uold2)
+print('Uold vs Uold2 relative:',abs((Uold2-Uold)/Uold),'\tUold2',Uold2)
 print('done')
 
-if writeTF:
-    file.close()
+if writeUTF:
+    file1.close()
+if writeptsTF:
+    file2.close()
 
 
 
