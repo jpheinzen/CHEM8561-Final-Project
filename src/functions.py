@@ -114,7 +114,7 @@ def calcLJPotentialOld(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]"
 
     return LJ12,LJ6
 
-def getPotentialOld(pts: np.ndarray, nPts: int, box: float) -> float:
+def getPotentialOld(pts: np.ndarray, nPts: int, box: float):
     hbox = box/2
     U = 0.0
     # print(hbox)
@@ -178,6 +178,24 @@ def writePts(file, pts: np.ndarray, nPts: int) -> None:
         file.write('\t%g\t%g\t%g\n' % (pts[0,i],pts[1,i],pts[2,i]))
         # print('\t%g\t%g\t%g\n' % (pts[0,i],pts[1,i],pts[2,i]))
     
+def checkInBox(pts: np.ndarray, boxMat: np.ndarray, arrLen: int) -> bool:
+    """to make sure that there are no points outisde of the boxes"""
+
+    allInBox = True
+    for i in range(arrLen):
+        box = boxMat[i] ** (1/3)
+        # print(box)
+        if (pts[i,:,:] > box).any():
+            largePt = np.max(pts[i,:,:])
+            print('largest point', largePt,'box',box)
+            allInBox = False
+            return allInBox
+        elif (pts[i,:,:] < 0).any():
+            smallPt = np.min(pts[i,:,:])
+            print('smallest point', smallPt,'box',box)
+            allInBox = False
+            return allInBox
+    return allInBox
 
 if __name__ == "__main__":
     nPts = 4
