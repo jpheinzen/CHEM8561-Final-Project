@@ -7,8 +7,6 @@ import sys
 # ion()
 
 k =  1.380649e-23        # J/K.
-sigma = 3.831e-10
-eps = 204.68*k
 
 def generateConfig(nPts: int, box: float, rng) -> np.ndarray:
     # rng = np.random.default_rng()  # the simplest way to generate random numbers
@@ -24,15 +22,19 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
         plt.ylim(0,ymax)
     plt.show()
 
-def calcLJPotential(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
-    global k, sigma, eps 
-    
+def calcLJPotential(sqDistance: np.ndarray, sigma:float = 3.831e-10) -> "tuple[np.ndarray,np.ndarray]":
     v = (sigma**2/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore
     LJ12 = (v**2)             # type: ignore
     LJ6 = (v)                # type: ignore
 
     return LJ12,LJ6
+
+def addLJArr(LJ12: np.ndarray, LJ6: np.ndarray, eps:float = 204.68) -> np.ndarray:
+    global k
+    eps *= k
+
+    return 4*eps*np.sum(LJ12 - LJ6)
 
 def getPotential(pts: np.ndarray, i: int, box: float) -> "tuple[np.ndarray,np.ndarray]":
     hbox = box/2
@@ -104,8 +106,9 @@ def getPotentials(pts: np.ndarray, nPts: int, box: float) -> "tuple[np.ndarray,n
 
     return LJ12,LJ6
 
-def calcLJPotentialOld(sqDistance: np.ndarray) -> "tuple[np.ndarray,np.ndarray]":
-    global k, sigma, eps 
+def calcLJPotentialOld(sqDistance: np.ndarray, sigma:float = 3.831e-10, eps:float = 204.68) -> "tuple[np.ndarray,np.ndarray]":
+    global k
+    eps *= k
     
     v = (sigma/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore

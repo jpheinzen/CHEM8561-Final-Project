@@ -4,21 +4,11 @@ from functions import *
 import time
 import sys
 
-
-k =  1.380649e-23        # J/K.
-sigma = 3.831e-10
-eps = 204.68*k
-
-# 3d plot, how to use VScode after plotting
-
-
 # rng = np.random.default_rng()
 bg = np.random.MT19937(1)
 rng = np.random.Generator(bg)
 
-
 # Initializing points in box
-
 nPts = 108
 # nPts = 5
 T = 320
@@ -69,7 +59,7 @@ pts = generateConfig(nPts, box, rng)
 
 # Calculate energy Uold
 (LJ12old,LJ6old) = getPotentials(pts, nPts, box)
-Uold = 4*eps*np.sum(LJ12old-LJ6old)
+Uold = addLJArr(LJ12old,LJ6old)
 # UU = getPotentialOld(pts, nPts, box)
 
 # print((Uold-UU)/UU,Uold,UU)
@@ -99,7 +89,7 @@ for n in range(N):
         (LJ12newsmall,LJ6newsmall) = getPotential(pts, i, box)
 
         I = getInds(i,nPts)
-        dU = 4*eps*np.sum(LJ12newsmall - LJ6newsmall) - 4*eps*np.sum(LJ12old[I] - LJ6old[I])
+        dU = addLJArr(LJ12newsmall,LJ6newsmall) - addLJArr(LJ12old[I],LJ6old[I])
         
         if debug:
             check(Uold+dU,getPotentialOld(pts, nPts, box),i,exit=False,tol=1e-12)
@@ -150,7 +140,7 @@ for n in range(N):
     # check(LJ12new,b,'12')
     # check(LJ6new,c,'6')
 
-    Unew = 4*eps*np.sum(LJ12new-LJ6new)
+    Unew = addLJArr(LJ12new,LJ6new)
 
     if debug:
         check(Unew,getPotentialOld(pts*coordFact, nPts, boxNew),'3',tol=5e-15)
