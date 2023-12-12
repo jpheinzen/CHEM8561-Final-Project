@@ -32,12 +32,13 @@ N = 51
 N = 1_000_000+5001
 debug = False
 # debug = True
-writeUTF = False
-# writeUTF = True
-writeptsTF = True
+# writeUTF = False
+writeUTF = True
+# writeptsTF = False
 writeptsTF = True
 writeEvery = 100
 writeToScreen = False
+# writeToScreen = True
 
 if writeUTF: # energy to write to file
     file1 = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
@@ -261,6 +262,7 @@ if writeptsTF:
 # rand(1)
 # nPts = 108
 # N = 51
+# P = 1.005e8
 
 
 # old: -6.0202e-19         new: 5.2352e-18         diff: 5.8372e-18        box: 2.0159e-09

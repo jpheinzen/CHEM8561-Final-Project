@@ -110,7 +110,7 @@ def calcLJPotentialOld(sqDistance: np.ndarray, sigma:float = 3.831e-10, eps:floa
     global k
     eps *= k
     
-    v = (sigma/sqDistance)**3    # type: ignore
+    v = (sigma**2/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore
     LJ12 = 4*eps*(v**2)             # type: ignore
     LJ6 = -4*eps*(v)                # type: ignore
