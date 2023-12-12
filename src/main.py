@@ -8,13 +8,14 @@ import sys
 bg = np.random.MT19937(1)
 rng = np.random.Generator(bg)
 
+atm2Pa = 101325
+
 # Initializing points in box
 nPts = 108
 # nPts = 5
 T = 320
-P = 1e5
-P = 7538580
-P = 1.005e+8
+P = 74.4*atm2Pa
+P = 992*atm2Pa
 k =  1.380649e-23        # J/K.
 beta = 1/(k*T)
 nAccepts = 0
@@ -29,6 +30,7 @@ dv = V/2**3
 
 N = 51
 N = 1_000_000+5001
+N = 5001
 debug = False
 # debug = True
 writeUTF = False
@@ -36,15 +38,16 @@ writeUTF = True
 writeptsTF = True
 writeEvery = 100
 writeToScreen = False
+writeToScreen = True
 
 if writeUTF: # energy to write to file
-    file1 = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
+    file1 = open("U.txt", "w")
     # Usave = np.zeros(N*nPts)
     # iUsave = 0
     iTot = 0
     file1.write('%i\t%i\t%i\n' % (N,nPts,writeEvery))
 if writeptsTF:  # points to write to file
-    file2 = open("/project/heinz194/private/classes/CHEM_8561/Project/pts.txt", "w")
+    file2 = open("pts.txt", "w")
     file2.write('%i\t%i\t%i\n' % (N,nPts,writeEvery))
 
 

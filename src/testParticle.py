@@ -32,12 +32,24 @@ boxMat = V ** (1/3)
 print("all points are in box?",checkInBox(pts,boxMat,arrLen))
 
 
+epsNAP = 353.2
+sigmaNAP = 4.7290e-10
+
 num_TP_Pts = 5
+
 
 i = 0
 
 TP_pts = generateConfig(num_TP_Pts, boxMat[i], rng)
 print(TP_pts)
+
+j = 0
+(LJ12,LJ6) = getPotential(TP_pts,j,boxMat[i])
+U = addLJArr(LJ12=LJ12,LJ6=LJ6)
+
+print(U)
+
+
 
 
 

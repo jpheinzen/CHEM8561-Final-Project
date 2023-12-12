@@ -4,10 +4,14 @@ import time
 
 
 
-def importU():
+def importU(path: str = "C:/Users/jphei/Desktop/",fileName: str = "U.txt"):
+    totPath = path+fileName
+    print("From",totPath)
+
     txtIE = "Importing Energy"
     print(txtIE, end="")
-    file = open("C:/Users/jphei/Desktop/U.txt", "r")
+
+    file = open(totPath, "r")
     # txt = fo.read()
 
     # print(type(txt))
@@ -47,10 +51,14 @@ def importU():
     return arr, resid
 
 
-def importPts(fast = False):
+def importPts(path: str = "C:/Users/jphei/Desktop/",fileName: str = "pts.txt", fast = False):
+    totPath = path+fileName
+    print("From",totPath)
+
     txtIP = "Importing Points: "
     print(txtIP, end="")
-    file = open("C:/Users/jphei/Desktop/pts.txt", "r")
+
+    file = open(totPath, "r")
     
     i = -1
     j = 0

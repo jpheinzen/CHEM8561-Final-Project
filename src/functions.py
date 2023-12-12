@@ -22,7 +22,7 @@ def plotParticles(pts: np.ndarray, xmax: float = 0, ymax: float = 0) -> None:
         plt.ylim(0,ymax)
     plt.show()
 
-def calcLJPotential(sqDistance: np.ndarray, sigma:float = 3.831e-10) -> "tuple[np.ndarray,np.ndarray]":
+def calcLJPotential(sqDistance: np.ndarray, sigma:float) -> "tuple[np.ndarray,np.ndarray]":
     v = (sigma**2/sqDistance)**3    # type: ignore
     # LJ = 4*eps*(v**2 - v)           # type: ignore
     LJ12 = (v**2)             # type: ignore
@@ -30,13 +30,13 @@ def calcLJPotential(sqDistance: np.ndarray, sigma:float = 3.831e-10) -> "tuple[n
 
     return LJ12,LJ6
 
-def addLJArr(LJ12: np.ndarray, LJ6: np.ndarray, eps:float = 204.68) -> np.ndarray:
+def addLJArr(LJ12: np.ndarray, LJ6: np.ndarray, eps:float = 204.68) -> float:
     global k
     eps *= k
 
     return 4*eps*np.sum(LJ12 - LJ6)
 
-def getPotential(pts: np.ndarray, i: int, box: float) -> "tuple[np.ndarray,np.ndarray]":
+def getPotential(pts: np.ndarray, i: int, box: float, sigma:float = 3.831e-10) -> "tuple[np.ndarray,np.ndarray]":
     hbox = box/2
     # U = 0.0
     # print(hbox)
@@ -61,9 +61,9 @@ def getPotential(pts: np.ndarray, i: int, box: float) -> "tuple[np.ndarray,np.nd
     # print(sqDistance)
     # print(sqDistance2+sqDistance)
     
-    return calcLJPotential(sqDistance)
+    return calcLJPotential(sqDistance, sigma)
 
-def getPotentials(pts: np.ndarray, nPts: int, box: float) -> "tuple[np.ndarray,np.ndarray]":
+def getPotentials(pts: np.ndarray, nPts: int, box: float, sigma:float = 3.831e-10) -> "tuple[np.ndarray,np.ndarray]":
     hbox = box/2
     # U = 0.0
     # print(hbox)
@@ -96,7 +96,7 @@ def getPotentials(pts: np.ndarray, nPts: int, box: float) -> "tuple[np.ndarray,n
         # print(sqDistance)
         # print(sqDistance2+sqDistance)
         
-        (LJ12[hfi:hfip1],LJ6[hfi:hfip1]) = calcLJPotential(sqDistance)
+        (LJ12[hfi:hfip1],LJ6[hfi:hfip1]) = calcLJPotential(sqDistance, sigma)
         # print(pots)
         # Uarr[i] = np.sum(LJ12[hfi:hfip1]+LJ6[hfi:hfip1])
         # print(U)
