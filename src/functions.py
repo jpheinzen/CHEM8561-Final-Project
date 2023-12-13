@@ -275,13 +275,11 @@ if __name__ == "__main__":
     print(a)
 
 
-    test = np.arange(1)/0
-    print(test)
-
     # Testing printing of pts array
     # writePts(pts,nPts)
 
-
+    for i in range(4,4+3):
+        print(i)
 
 
 
