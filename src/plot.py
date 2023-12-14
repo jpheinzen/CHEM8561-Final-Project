@@ -5,11 +5,12 @@ import matplotlib.animation as animation
 import sys
 
 
-(U, resid) = importU()
-(pts,stats) = importPts()
+(U, resid) = importU(fileName='UlowP.txt')
+(pts,stats) = importPts(fileName='ptslowP.txt')
 (arrLen,_,_) = np.shape(pts)
 
 pts *= 1e9  # to get units of nm
+
 
 """Volume over time"""
 # plt.plot(stats[:,0],stats[:,1]**(1/3))
@@ -19,6 +20,7 @@ pts *= 1e9  # to get units of nm
 # plt.plot(pts[1,:,1],pts[1,:,2],'o')
 
 """Potential over time"""
+# plt.plot(U[:,0],abs(U[:,1]),'o')
 # plt.semilogy(U[:,0],abs(U[:,1]),'o')
 # plt.loglog(U[:,0],abs(U[:,1]),'o')
 # plt.semilogy(U[:-1,0],resid,'o')

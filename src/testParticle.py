@@ -8,7 +8,9 @@ import sys
 (U, resid) = importU()
 (pts,stats) = importPts()
 # (U, resid) = importU(fileName='Us.txt')
+# (U, resid) = importU(fileName='UlowP.txt')
 # (pts,stats) = importPts(fileName='ptss.txt')
+# (pts,stats) = importPts(fileName='ptslowP.txt')
 (arrLen,nPts,_) = np.shape(pts)
 # Stats:
 # iter, V, dp, dv
@@ -18,9 +20,9 @@ print(arrLen,nPts)
 # nums = rng.random([3,nPts])
 
 def testParticle(eps: float, sigma: float, pts: np.ndarray = pts, stats: np.ndarray = stats) -> float:
-    # rng = np.random.default_rng()
-    bg = np.random.MT19937(2)
-    rng = np.random.Generator(bg)
+    rng = np.random.default_rng()
+    # bg = np.random.MT19937(2)
+    # rng = np.random.Generator(bg)
 
     VMat = stats[:,1]
     boxMat = VMat ** (1/3)
@@ -35,7 +37,6 @@ def testParticle(eps: float, sigma: float, pts: np.ndarray = pts, stats: np.ndar
 
 
     num_TP_Pts = 200
-    # num_TP_Pts = 500
 
     num_configs = 1000
 
@@ -69,6 +70,8 @@ def testParticle(eps: float, sigma: float, pts: np.ndarray = pts, stats: np.ndar
         if i % (num_configs//10) == 0:
             print('done with',i,iConfig)
         
+        # print(np.average(psi))
+
         numerator[i,:] = VMat[iConfig] * np.exp(-beta*psi)
         denominator[i,:] = VMat[iConfig]
         i+=1
@@ -83,7 +86,7 @@ def testParticle(eps: float, sigma: float, pts: np.ndarray = pts, stats: np.ndar
     num = np.average(numerator)
     den = np.average(denominator)
 
-    val = -T_reduced*np.log(num/den)
+    val = -T_reduced*np.log(num/den)    # type: ignore
 
     # print('val',val,'num',num,'den',den)
 
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     sigmaNAP = 4.7290e-10
     print(testParticle(epsNAP,sigmaNAP))
 
-    # 2,7-Dimethylnapthalene 330.3942536	0.522025
+    # 2,6-Dimethylnapthalene 330.3942536	0.522025
     epsNAP = 330.3942536
     sigmaNAP = 5.22025e-10
     print(testParticle(epsNAP,sigmaNAP))
