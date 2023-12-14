@@ -40,11 +40,11 @@ writeEvery = 100
 writeToScreen = False
 # writeToScreen = True
 
+iTot = 0
 if writeUTF: # energy to write to file
     file1 = open("/project/heinz194/private/classes/CHEM_8561/Project/U.txt", "w")
     # Usave = np.zeros(N*nPts)
     # iUsave = 0
-    iTot = 0
     file1.write('%i\t%i\t%i\n' % (N,nPts,writeEvery))
 if writeptsTF:  # points to write to file
     file2 = open("/project/heinz194/private/classes/CHEM_8561/Project/pts.txt", "w")
@@ -123,7 +123,7 @@ for n in range(N):
             # Usave[iUsave] = Uold
             file1.write("%i\t%g\n" % (iTot, Uold))
             # iUsave +=1
-            iTot += 1
+        iTot += 1
 
 
     if writeptsTF and (n % writeEvery == 0):
